@@ -43,19 +43,21 @@ function CanModel({ progress }: { progress: ProgressRef }) {
     let s = 1;
 
     if (p <= 0.5) {
-      // Section 1 -> Section 2: rotate 0deg -> 90deg, drift right under "SINCE 2002"
+      // Section 1 -> Section 2: stays horizontal (90deg),
+      // drifts left and grows slightly to sit across the player image
       const t = easeInOut(p / 0.5);
-      rotZ = lerp(0, Math.PI / 2, t);
-      x = lerp(0, viewport.width * 0.18, t);
-      y = lerp(0, -viewport.height * 0.05, t);
-      s = lerp(1, 1.15, t);
+      rotZ = Math.PI / 2;
+      x = lerp(0, -viewport.width * 0.09, t);
+      y = lerp(0, -viewport.height * 0.02, t);
+      s = lerp(1.05, 1.2, t);
     } else {
-      // Section 2 -> Section 3: rotate 90deg -> 0deg, land in the NITRO GREEN slot
+      // Section 2 -> Section 3: rotate 90deg -> 0deg (vertical),
+      // land in the center NITRO GREEN slot
       const t = easeInOut((p - 0.5) / 0.5);
       rotZ = lerp(Math.PI / 2, 0, t);
-      x = lerp(viewport.width * 0.18, 0, t);
-      y = lerp(-viewport.height * 0.05, viewport.height * 0.08, t);
-      s = lerp(1.15, 0.45, t);
+      x = lerp(-viewport.width * 0.09, 0, t);
+      y = lerp(-viewport.height * 0.02, viewport.height * 0.06, t);
+      s = lerp(1.2, 0.48, t);
     }
 
     group.current.rotation.z = rotZ;
@@ -74,7 +76,7 @@ useFBX.preload("/monster_txt.fbx");
 
 export default function Can3D({ progress }: { progress: ProgressRef }) {
   return (
-    <div className="fixed inset-0 z-30 pointer-events-none" aria-hidden="true">
+    <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 30 }} aria-hidden="true">
       <Canvas
         camera={{ position: [0, 0, 8], fov: 45 }}
         gl={{ alpha: true, antialias: true }}
@@ -82,7 +84,7 @@ export default function Can3D({ progress }: { progress: ProgressRef }) {
       >
         <ambientLight intensity={0.9} />
         <directionalLight position={[5, 5, 5]} intensity={1.6} />
-        <directionalLight position={[-5, -2, 4]} intensity={0.7} color="#d6ff00" />
+        <directionalLight position={[-5, -2, 4]} intensity={0.7} color="#d8f000" />
         <Suspense fallback={null}>
           <CanModel progress={progress} />
         </Suspense>
