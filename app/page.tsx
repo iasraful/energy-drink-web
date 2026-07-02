@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -8,63 +9,33 @@ import { useGSAP } from "@gsap/react";
 
 gsap.registerPlugin(ScrollTrigger);
 
+const Can3D = dynamic(() => import("@/components/can-3d"), { ssr: false });
+
 export default function Home() {
   const container = useRef<HTMLDivElement>(null);
-  const canRef = useRef<HTMLImageElement>(null);
+  const progressRef = useRef<number>(0);
 
   useGSAP(() => {
-    if (!canRef.current || !container.current) return;
+    if (!container.current) return;
 
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: container.current,
-        start: "top top",
-        end: "bottom bottom",
-        scrub: 1,
+    const trigger = ScrollTrigger.create({
+      trigger: container.current,
+      start: "top top",
+      end: "bottom bottom",
+      scrub: 1,
+      onUpdate: (self) => {
+        progressRef.current = self.progress;
       },
     });
 
-    // Initial state (Section 1)
-    gsap.set(canRef.current, {
-      top: "50%",
-      left: "50%",
-      xPercent: -50,
-      yPercent: -50,
-      rotation: 0, // In CSS, 0 means it keeps its original orientation (which is horizontal for Can-label-90deg.png)
-      scale: 1,
-    });
-
-    // Section 1 -> Section 2
-    tl.to(canRef.current, {
-      top: "150%", // Move down one viewport height
-      left: "70%", // Move slightly right to sit under "SINCE 2002 PRODUCING"
-      rotation: 0,
-      scale: 1.2,
-      ease: "power2.inOut",
-    }, 0);
-
-    // Section 2 -> Section 3
-    tl.to(canRef.current, {
-      top: "250%", // Move down another viewport height
-      left: "50%", // Move back to center
-      rotation: -90, // Rotate to make it vertical (0 degree in reality)
-      scale: 0.8, // Match the scale of the other cans
-      ease: "power2.inOut",
-    }, 0.5);
-
+    return () => trigger.kill();
   }, { scope: container });
 
   return (
     <main ref={container} className="bg-black text-white min-h-[300vh] overflow-x-hidden font-sans relative">
 
-      {/* Animated Fixed Can */}
-      <img
-        ref={canRef}
-        src="/Can-label-90deg.png"
-        alt="Nitro Can"
-        className="fixed z-30 pointer-events-none drop-shadow-[0_20px_50px_rgba(214,255,0,0.3)] w-[600px] md:w-[800px]"
-        style={{ transformOrigin: "center center" }}
-      />
+      {/* Animated Fixed 3D Can */}
+      <Can3D progress={progressRef} />
 
       {/* Navbar */}
       <nav className="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-10 py-6 mix-blend-difference">
@@ -116,7 +87,7 @@ export default function Home() {
       </section>
 
       {/* SECTION 2: Football Player */}
-      <section className="relative w-full h-screen flex items-center overflow-hidden z-20">
+      <section className="relative w-full h-screen flex items-center overflow-hidden">
         <div className="absolute top-0 left-0 w-[60%] h-[90%] z-0 opacity-50 bg-gradient-to-r from-black via-transparent to-black rounded-3xl overflow-hidden mx-8 my-8 mt-16">
           <Image
             src="/second-section-image.png"
@@ -126,7 +97,7 @@ export default function Home() {
           />
         </div>
 
-        <div className="relative z-10 w-full flex justify-end px-12 pt-32">
+        <div className="relative w-full flex justify-end px-12 pt-32" style={{ zIndex: 40 }}>
           <div className="font-syncopate font-bold leading-[0.8] text-right flex flex-col items-end uppercase text-[var(--color-neon)]" style={{ fontSize: "10vw" }}>
             <div className="transform -skew-x-[15deg]">SINCE</div>
             <div className="transform -skew-x-[15deg] mb-12">2002</div>
